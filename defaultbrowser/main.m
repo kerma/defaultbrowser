@@ -15,21 +15,27 @@ int main(int argc, const char * argv[])
         NSUserDefaults *args = [NSUserDefaults standardUserDefaults];
         NSString *set = [args stringForKey:@"set"];
         
-        // we're interested in things which can handle http
-        CFStringRef urlschemeref = (__bridge CFStringRef)@"http";
+        // we're interested in things which can handle http/https
+        NSArray *urlschemerefs = [[NSArray alloc] initWithObjects:@"http", @"https", nil];
+
+        //CFStringRef urlschemeref = (__bridge CFStringRef)@"http";
+        //CFStringRef urlschemeref2 = (__bridge CFStringRef)@"https";
         
         if (set == nil) {
             // what is our current handler?
-            NSString *currentHandler = (__bridge NSString *) LSCopyDefaultHandlerForURLScheme(urlschemeref);
+            NSString *currentHandler = (__bridge NSString *) LSCopyDefaultHandlerForURLScheme(
+                                            (__bridge CFStringRef)([urlschemerefs objectAtIndex:0]));
+            
             currentHandler = [[currentHandler componentsSeparatedByString:@"."] lastObject];
             printf("Current: %s\n\n", [currentHandler cStringUsingEncoding:NSUTF8StringEncoding]);
             printf("Use -set <browser> to set a new default HTTP handler\n");
         } else {
             // lets figure out which handlers are available
-            NSArray *HTTPHandlers = (__bridge NSArray *) LSCopyAllHandlersForURLScheme(urlschemeref);
+            NSArray *HTTPHandlers = (__bridge NSArray *) LSCopyAllHandlersForURLScheme(
+                                                            (__bridge CFStringRef)([urlschemerefs objectAtIndex:0]));
             NSMutableDictionary *handlers = [NSMutableDictionary dictionary];
             for (int i = 0; i < [HTTPHandlers count]; i++) {
-                NSString *split = HTTPHandlers[i];
+                NSString *split = [HTTPHandlers objectAtIndex:i];
                 NSArray *parts = [split componentsSeparatedByString:@"."];
                 [handlers setObject:split  forKey:[[parts lastObject] lowercaseString]];
             }
@@ -37,14 +43,16 @@ int main(int argc, const char * argv[])
             // set a new default
             if ([handlers valueForKey:[set lowercaseString]] != nil) {
                 CFStringRef newHandler = (__bridge CFStringRef)([handlers valueForKey:[set lowercaseString]]);
-                OSStatus s = LSSetDefaultHandlerForURLScheme(urlschemeref, newHandler);
-                if (s == 0) {
-                    printf("New default browser: %s\n", [set cStringUsingEncoding:NSUTF8StringEncoding]);
+                for (NSString *urlschemeref in urlschemerefs) {
+                    OSStatus s = LSSetDefaultHandlerForURLScheme((__bridge CFStringRef)(urlschemeref), newHandler);
+                    //OSStatus s2 = LSSetDefaultHandlerForURLScheme(urlschemeref2, newHandler);
+                    if (s != 0) {
+                        printf("Setting a new default browser failed\n");
+                        return 1;
+                    }
                 }
-                else {
-                    printf("Setting a new default browser failed\n");
-                    return 1;
-                }
+                printf("New default browser: %s\n", [set cStringUsingEncoding:NSUTF8StringEncoding]);
+
             } else {
                 printf("%s is not available as a HTTP browser\n", [set cStringUsingEncoding:NSUTF8StringEncoding]);
                 printf("Available browsers:\n");
