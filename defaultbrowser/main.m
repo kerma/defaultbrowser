@@ -42,7 +42,6 @@ int main(int argc, const char * argv[])
                 CFStringRef newHandler = (__bridge CFStringRef)([handlers valueForKey:[set lowercaseString]]);
                 for (NSString *urlschemeref in urlschemerefs) {
                     OSStatus s = LSSetDefaultHandlerForURLScheme((__bridge CFStringRef)(urlschemeref), newHandler);
-                    //OSStatus s2 = LSSetDefaultHandlerForURLScheme(urlschemeref2, newHandler);
                     if (s != 0) {
                         printf("Setting a new default browser failed\n");
                         return 1;
