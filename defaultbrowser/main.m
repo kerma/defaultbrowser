@@ -18,9 +18,6 @@ int main(int argc, const char * argv[])
         // we're interested in things which can handle http/https
         NSArray *urlschemerefs = [[NSArray alloc] initWithObjects:@"http", @"https", nil];
 
-        //CFStringRef urlschemeref = (__bridge CFStringRef)@"http";
-        //CFStringRef urlschemeref2 = (__bridge CFStringRef)@"https";
-        
         if (set == nil) {
             // what is our current handler?
             NSString *currentHandler = (__bridge NSString *) LSCopyDefaultHandlerForURLScheme(
