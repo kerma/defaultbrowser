@@ -8,6 +8,20 @@ As there seems no other elegant way of doing it you need some Objective-C code.
 The code uses Launch Services. More info on 
 [Launch Services Reference](https://developer.apple.com/library/mac/documentation/Carbon/Reference/LaunchServicesReference/Reference/reference.html)
 
+
+Build
+-----
+1. Build it.
+
+`
+cd defaultbrowser
+xcodebuild -project defaultbrowser.xcodeproj -alltargets -configuration Release
+`
+
+2. Move it into your path (replace ~/bin to whatever you like)
+
+`cp build/Release/defaultbrowser ~/bin/`
+
 Usage
 -----
 
