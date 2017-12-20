@@ -13,14 +13,16 @@ Build
 -----
 1. Build it.
 
-`
+```
 cd defaultbrowser
 xcodebuild -project defaultbrowser.xcodeproj -alltargets -configuration Release
-`
+```
 
 2. Move it into your path (replace ~/bin to whatever you like)
 
-`cp build/Release/defaultbrowser ~/bin/`
+```
+cp build/Release/defaultbrowser ~/bin/
+```
 
 Usage
 -----
@@ -30,6 +32,8 @@ in your path. `chmod +x defaultbrowser` is probably also necessary.
 
 You can set the default browser with:
 
-    defaultbrowser -set chrome
+```
+defaultbrowser -set chrome
+```
 
 Running defaultbrowser without arguments shows the current setting.
