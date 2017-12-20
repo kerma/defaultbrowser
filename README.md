@@ -9,13 +9,13 @@ Install
 Build it:
 
 ```
-gcc -o defaultbrowser -O2 -framework Foundation -framework ApplicationServices src/main.m
+make
 ```
 
-Move it into your executable path:
+Install it into your executable path:
 
 ```
-cp defaultbrowser /usr/local/bin/
+make install
 ```
 
 Usage
