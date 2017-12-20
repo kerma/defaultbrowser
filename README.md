@@ -9,13 +9,13 @@ Install
 Build it:
 
 ```
-xcodebuild -project defaultbrowser.xcodeproj -alltargets -configuration Release
+gcc -o defaultbrowser -O2 -framework Foundation -framework ApplicationServices src/main.m
 ```
 
 Move it into your executable path:
 
 ```
-cp build/Release/defaultbrowser /usr/local/bin/
+cp defaultbrowser /usr/local/bin/
 ```
 
 Usage
