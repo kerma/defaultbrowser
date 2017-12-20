@@ -37,3 +37,8 @@ defaultbrowser -set chrome
 ```
 
 Running defaultbrowser without arguments shows the current setting.
+
+License
+-------
+
+MIT
