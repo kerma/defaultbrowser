@@ -1,35 +1,40 @@
 defaultbrowser
 ==============
 
-Command line script for getting and setting a default browser (HTTP handler) in Mac OS X.
+Command line tool for setting the default browser (HTTP handler) in macOS X.
 
-As there seems no other elegant way of doing it you need some Objective-C code.
+Install
+-------
 
-The code uses Launch Services. More info on 
-[Launch Services Reference](https://developer.apple.com/library/mac/documentation/Carbon/Reference/LaunchServicesReference/Reference/reference.html)
+Build it:
 
+```
+make
+```
 
-Build
------
-1. Build it.
+Install it into your executable path:
 
-`
-cd defaultbrowser
-xcodebuild -project defaultbrowser.xcodeproj -alltargets -configuration Release
-`
-
-2. Move it into your path (replace ~/bin to whatever you like)
-
-`cp build/Release/defaultbrowser ~/bin/`
+```
+make install
+```
 
 Usage
 -----
 
-Open the XCode project and build it or download the build/defaultbrowser and put it somewhere
-in your path. `chmod +x defaultbrowser` is probably also necessary.
+Set the default browser with:
 
-You can set the default browser with:
+```
+defaultbrowser -set chrome
+```
 
-    defaultbrowser -set chrome
+Running `defaultbrowser` without arguments shows the current setting.
 
-Running defaultbrowser without arguments shows the current setting.
+How does it work?
+-----------------
+
+The code uses the [macOS Launch Services API](https://developer.apple.com/documentation/coreservices/launch_services).
+
+License
+-------
+
+MIT
