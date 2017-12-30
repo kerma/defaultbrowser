@@ -6,47 +6,65 @@
 #import <Foundation/Foundation.h>
 #import <ApplicationServices/ApplicationServices.h>
 
-int main(int argc, const char * argv[])
-{
+NSMutableDictionary* get_http_handlers(NSArray *url_scheme_refs) {
+    NSArray *handlers =
+      (__bridge NSArray *) LSCopyAllHandlersForURLScheme(
+        (__bridge CFStringRef) ([url_scheme_refs objectAtIndex:0])
+      );
+
+    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+
+    for (int i = 0; i < [handlers count]; i++) {
+        NSString *handler = [handlers objectAtIndex:i];
+        NSArray  *parts   = [handler componentsSeparatedByString:@"."];
+        [dict setObject:handler forKey:[[parts lastObject] lowercaseString]];
+    }
+
+    return dict;
+}
+
+NSString* get_current_http_handler(NSArray *url_scheme_refs) {
+    NSString *handler =
+        (__bridge NSString *) LSCopyDefaultHandlerForURLScheme(
+            (__bridge CFStringRef) ([url_scheme_refs objectAtIndex:0])
+        );
+
+    handler = [[handler componentsSeparatedByString:@"."] lastObject];
+
+    return handler;
+}
+
+int main(int argc, const char *argv[]) {
+    const char *target = argv[1];
+
     @autoreleasepool {
-        // read command line -set argument
-        NSUserDefaults *args = [NSUserDefaults standardUserDefaults];
-        NSString *set = [args stringForKey:@"set"];
+        NSArray *url_scheme_refs = [[NSArray alloc] initWithObjects:@"http", @"https", nil];
 
-        // we're interested in things which can handle http/https
-        NSArray *urlschemerefs = [[NSArray alloc] initWithObjects:@"http", @"https", nil];
+        // Get all HTTP handlers
+        NSMutableDictionary *handlers = get_http_handlers(url_scheme_refs);
 
-        if (set == nil) {
-            // what is our current handler?
-            NSString *currentHandler = (__bridge NSString *) LSCopyDefaultHandlerForURLScheme(
-                                            (__bridge CFStringRef)([urlschemerefs objectAtIndex:0]));
+        if (target == NULL) {
+            // Get current HTTP handler
+            NSString *currentHandler = get_current_http_handler(url_scheme_refs);
 
-            currentHandler = [[currentHandler componentsSeparatedByString:@"."] lastObject];
-            printf("Current: %s\n\n", [currentHandler cStringUsingEncoding:NSUTF8StringEncoding]);
-            printf("Use -set <browser> to set a new default HTTP handler\n");
-        } else {
-            // figure out which handlers are available
-            NSArray *HTTPHandlers = (__bridge NSArray *) LSCopyAllHandlersForURLScheme(
-                                                            (__bridge CFStringRef)([urlschemerefs objectAtIndex:0]));
-            NSMutableDictionary *handlers = [NSMutableDictionary dictionary];
-            for (int i = 0; i < [HTTPHandlers count]; i++) {
-                NSString *split = [HTTPHandlers objectAtIndex:i];
-                NSArray *parts = [split componentsSeparatedByString:@"."];
-                [handlers setObject:split  forKey:[[parts lastObject] lowercaseString]];
+            // List all HTTP handlers, marking the current one with a star
+            for (NSString *key in handlers) {
+                char *mark = (key == currentHandler) ? "* " : "  ";
+                printf("%s%s\n", mark, [key cStringUsingEncoding:NSUTF8StringEncoding]);
             }
+        } else {
+            NSString *target_handler = [handlers valueForKey:[NSString stringWithUTF8String:target]];
 
-            // set a new default
-            if ([handlers valueForKey:[set lowercaseString]] != nil) {
-                CFStringRef newHandler = (__bridge CFStringRef)([handlers valueForKey:[set lowercaseString]]);
-                for (NSString *urlschemeref in urlschemerefs) {
-                    LSSetDefaultHandlerForURLScheme((__bridge CFStringRef)(urlschemeref), newHandler);
+            // Set new HTTP handler
+            if (target_handler != nil) {
+                for (NSString *url_scheme_ref in url_scheme_refs) {
+                    LSSetDefaultHandlerForURLScheme(
+                        (__bridge CFStringRef) url_scheme_ref,
+                        (__bridge CFStringRef) target_handler
+                    );
                 }
             } else {
-                printf("%s is not available as a HTTP browser\n", [set cStringUsingEncoding:NSUTF8StringEncoding]);
-                printf("Available browsers:\n");
-                for (NSString *key in handlers) {
-                    printf("- %s\n", [key cStringUsingEncoding:NSUTF8StringEncoding]);
-                }
+                printf("%s is not available as an HTTP handler\n", target);
 
                 return 1;
             }
@@ -55,4 +73,3 @@ int main(int argc, const char * argv[])
 
     return 0;
 }
-
