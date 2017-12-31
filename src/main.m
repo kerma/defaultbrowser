@@ -10,10 +10,10 @@ NSString* app_name_from_bundle_id(NSString *app_bundle_id) {
     return [[app_bundle_id componentsSeparatedByString:@"."] lastObject];
 }
 
-NSMutableDictionary* get_http_handlers(NSArray *url_scheme_refs) {
+NSMutableDictionary* get_http_handlers() {
     NSArray *handlers =
       (__bridge NSArray *) LSCopyAllHandlersForURLScheme(
-        (__bridge CFStringRef) ([url_scheme_refs objectAtIndex:0])
+        (__bridge CFStringRef) @"http"
       );
 
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
@@ -26,26 +26,31 @@ NSMutableDictionary* get_http_handlers(NSArray *url_scheme_refs) {
     return dict;
 }
 
-NSString* get_current_http_handler(NSArray *url_scheme_refs) {
+NSString* get_current_http_handler() {
     NSString *handler =
         (__bridge NSString *) LSCopyDefaultHandlerForURLScheme(
-            (__bridge CFStringRef) ([url_scheme_refs objectAtIndex:0])
+            (__bridge CFStringRef) @"http"
         );
 
     return app_name_from_bundle_id(handler);
+}
+
+void set_default_handler(NSString *url_scheme, NSString *handler) {
+    LSSetDefaultHandlerForURLScheme(
+        (__bridge CFStringRef) url_scheme,
+        (__bridge CFStringRef) handler
+    );
 }
 
 int main(int argc, const char *argv[]) {
     const char *target = (argc == 1) ? '\0' : argv[1];
 
     @autoreleasepool {
-        NSArray *url_scheme_refs = [[NSArray alloc] initWithObjects:@"http", @"https", nil];
-
         // Get all HTTP handlers
-        NSMutableDictionary *handlers = get_http_handlers(url_scheme_refs);
+        NSMutableDictionary *handlers = get_http_handlers();
 
         // Get current HTTP handler
-        NSString *current_handler_name = get_current_http_handler(url_scheme_refs);
+        NSString *current_handler_name = get_current_http_handler();
 
         if (target == '\0') {
             // List all HTTP handlers, marking the current one with a star
@@ -63,12 +68,8 @@ int main(int argc, const char *argv[]) {
 
                 if (target_handler != nil) {
                     // Set new HTTP handler (HTTP and HTTPS separately)
-                    for (NSString *url_scheme_ref in url_scheme_refs) {
-                        LSSetDefaultHandlerForURLScheme(
-                            (__bridge CFStringRef) url_scheme_ref,
-                            (__bridge CFStringRef) target_handler
-                        );
-                    }
+                    set_default_handler(@"http", target_handler);
+                    set_default_handler(@"https", target_handler);
                 } else {
                     printf("%s is not available as an HTTP handler\n", target);
 
