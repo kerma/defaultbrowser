@@ -43,30 +43,36 @@ int main(int argc, const char *argv[]) {
         // Get all HTTP handlers
         NSMutableDictionary *handlers = get_http_handlers(url_scheme_refs);
 
-        if (target == NULL) {
-            // Get current HTTP handler
-            NSString *currentHandler = get_current_http_handler(url_scheme_refs);
+        // Get current HTTP handler
+        NSString *current_handler = get_current_http_handler(url_scheme_refs);
 
+        if (target == '\0') {
             // List all HTTP handlers, marking the current one with a star
             for (NSString *key in handlers) {
-                char *mark = (key == currentHandler) ? "* " : "  ";
+                char *mark = (key == current_handler) ? "* " : "  ";
                 printf("%s%s\n", mark, [key cStringUsingEncoding:NSUTF8StringEncoding]);
             }
         } else {
-            NSString *target_handler = [handlers valueForKey:[NSString stringWithUTF8String:target]];
+            NSString *target_handler_key = [NSString stringWithUTF8String:target];
 
-            // Set new HTTP handler
-            if (target_handler != nil) {
-                for (NSString *url_scheme_ref in url_scheme_refs) {
-                    LSSetDefaultHandlerForURLScheme(
-                        (__bridge CFStringRef) url_scheme_ref,
-                        (__bridge CFStringRef) target_handler
-                    );
-                }
+            if (target_handler_key == current_handler ) {
+              printf("%s is already set as the default HTTP handler\n", target);
             } else {
-                printf("%s is not available as an HTTP handler\n", target);
+                NSString *target_handler = [handlers valueForKey:target_handler_key];
 
-                return 1;
+                if (target_handler != nil) {
+                    // Set new HTTP handler
+                    for (NSString *url_scheme_ref in url_scheme_refs) {
+                        LSSetDefaultHandlerForURLScheme(
+                            (__bridge CFStringRef) url_scheme_ref,
+                            (__bridge CFStringRef) target_handler
+                        );
+                    }
+                } else {
+                    printf("%s is not available as an HTTP handler\n", target);
+
+                    return 1;
+                }
             }
         }
     }
