@@ -20,7 +20,7 @@ NSMutableDictionary* get_http_handlers() {
 
     for (int i = 0; i < [handlers count]; i++) {
         NSString *handler = [handlers objectAtIndex:i];
-        [dict setObject:handler forKey:[app_name_from_bundle_id(handler) lowercaseString]];
+        dict[[app_name_from_bundle_id(handler) lowercaseString]] = handler;
     }
 
     return dict;
@@ -64,7 +64,7 @@ int main(int argc, const char *argv[]) {
             if ([target_handler_name isEqual:current_handler_name]) {
               printf("%s is already set as the default HTTP handler\n", target);
             } else {
-                NSString *target_handler = [handlers valueForKey:target_handler_name];
+                NSString *target_handler = handlers[target_handler_name];
 
                 if (target_handler != nil) {
                     // Set new HTTP handler (HTTP and HTTPS separately)
