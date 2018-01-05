@@ -21,13 +21,13 @@ make install
 Usage
 -----
 
-Set the default browser with:
+Set the default browser with, e.g.:
 
 ```
-defaultbrowser -set chrome
+defaultbrowser chrome
 ```
 
-Running `defaultbrowser` without arguments shows the current setting.
+Running `defaultbrowser` without arguments lists available HTTP handlers and shows the current setting.
 
 How does it work?
 -----------------
