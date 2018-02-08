@@ -1,5 +1,6 @@
 BIN ?= defaultbrowser
 PREFIX ?= /usr/local
+BINDIR ?= $(PREFIX)/bin
 
 CC = gcc
 CFLAGS = -O2
@@ -9,11 +10,12 @@ CFLAGS = -O2
 all:
 	gcc -o $(BIN) $(CFLAGS) -framework Foundation -framework ApplicationServices src/main.m
 
-install:
-	cp $(BIN) $(PREFIX)/bin/
+install: all
+	install -d $(BINDIR)
+	install -m 755 $(BIN) $(BINDIR)
 
 uninstall:
-	rm -f $(PREFIX)/bin/$(BIN)
+	rm -f $(BINDIR)/$(BIN)
 
 clean:
 	rm -f $(BIN)
