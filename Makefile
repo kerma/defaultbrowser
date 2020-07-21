@@ -2,20 +2,22 @@ BIN ?= defaultbrowser
 PREFIX ?= /usr/local
 BINDIR ?= $(PREFIX)/bin
 
-CC = gcc
-CFLAGS = -O2
+CC ?= gcc
+CFLAGS ?= -O2
 
 .PHONY: all install uninstall clean
 
-all:
-	gcc -o $(BIN) $(CFLAGS) -framework Foundation -framework ApplicationServices src/main.m
+all: $(BIN)
 
-install: all
-	install -d $(BINDIR)
-	install -m 755 $(BIN) $(BINDIR)
+$(BIN):
+	$(CC) -o $(BIN) $(CFLAGS) -framework Foundation -framework ApplicationServices src/main.m
+
+install: $(BIN)
+	install -d $(DESTDIR)$(BINDIR)
+	install -m 755 $(BIN) $(DESTDIR)$(BINDIR)
 
 uninstall:
-	rm -f $(BINDIR)/$(BIN)
+	rm -f $(DESTDIR)$(BINDIR)/$(BIN)
 
 clean:
 	rm -f $(BIN)
