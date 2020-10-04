@@ -7,7 +7,7 @@
 #import <ApplicationServices/ApplicationServices.h>
 
 NSString* app_name_from_bundle_id(NSString *app_bundle_id) {
-    return [[app_bundle_id componentsSeparatedByString:@"."] lastObject];
+    return [[[app_bundle_id componentsSeparatedByString:@"."] lastObject] lowercaseString];
 }
 
 NSMutableDictionary* get_http_handlers() {
@@ -20,7 +20,7 @@ NSMutableDictionary* get_http_handlers() {
 
     for (int i = 0; i < [handlers count]; i++) {
         NSString *handler = [handlers objectAtIndex:i];
-        dict[[app_name_from_bundle_id(handler) lowercaseString]] = handler;
+        dict[app_name_from_bundle_id(handler)] = handler;
     }
 
     return dict;
