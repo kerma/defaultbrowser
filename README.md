@@ -34,6 +34,11 @@ How does it work?
 
 The code uses the [macOS Launch Services API](https://developer.apple.com/documentation/coreservices/launch_services).
 
+Additional Resources
+--------------------
+
+- [Bash completion](https://github.com/jonasbn/bash_completion_defaultbrowser) for `defaultbrowser`
+
 License
 -------
 
