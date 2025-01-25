@@ -58,6 +58,7 @@ int main(int argc, const char *argv[]) {
                 char *mark = [key caseInsensitiveCompare:current_handler_name] == NSOrderedSame ? "* " : "  ";
                 printf("%s%s\n", mark, [key UTF8String]);
             }
+
         } else {
             NSString *target_handler_name = [NSString stringWithUTF8String:target];
 
@@ -71,7 +72,10 @@ int main(int argc, const char *argv[]) {
                     set_default_handler(@"http", target_handler);
                     set_default_handler(@"https", target_handler);
                 } else {
-                    printf("%s is not available as an HTTP handler\n", target);
+                    printf("%s is not available as an HTTP handler\n\nAvailable HTTP handlers are:\n", target);
+                    for (NSString *key in handlers) {
+                        printf("  %s\n", [key UTF8String]);
+                    }
 
                     return 1;
                 }
