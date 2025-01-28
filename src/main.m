@@ -7,7 +7,19 @@
 #import <ApplicationServices/ApplicationServices.h>
 
 NSString* app_name_from_bundle_id(NSString *app_bundle_id) {
-    return [[[app_bundle_id componentsSeparatedByString:@"."] lastObject] lowercaseString];
+
+    NSString *handler = app_bundle_id;
+    NSString *shortname = @"";
+
+    if ([handler caseInsensitiveCompare:@"company.thebrowser.Browser"] == NSOrderedSame) {
+        shortname = @"arc";
+    } else if ([handler caseInsensitiveCompare:@"com.brave.Browser"] == NSOrderedSame) {
+        shortname = @"brave";
+    } else {
+        shortname = [[[app_bundle_id componentsSeparatedByString:@"."] lastObject] lowercaseString];
+    }
+
+    return shortname;
 }
 
 NSMutableDictionary* get_http_handlers() {
@@ -20,7 +32,10 @@ NSMutableDictionary* get_http_handlers() {
 
     for (int i = 0; i < [handlers count]; i++) {
         NSString *handler = [handlers objectAtIndex:i];
-        dict[app_name_from_bundle_id(handler)] = handler;
+
+        NSString *shortname = app_name_from_bundle_id(handler);
+
+        dict[shortname] = handler;
     }
 
     return dict;
@@ -59,19 +74,18 @@ int main(int argc, const char *argv[]) {
                 printf("%s%s\n", mark, [key UTF8String]);
             }
         } else {
-            NSString *target_handler_name = [NSString stringWithUTF8String:target];
 
-            if ([target_handler_name caseInsensitiveCompare:current_handler_name] == NSOrderedSame) {
-              printf("%s is already set as the default HTTP handler\n", target);
+            if ([target caseInsensitiveCompare:current_handler_name] == NSOrderedSame) {
+                printf("%s is already set as the default HTTP handler\n", [target UTF8String]);
             } else {
-                NSString *target_handler = handlers[target_handler_name];
+                NSString *target_handler = handlers[target];
 
                 if (target_handler != nil) {
                     // Set new HTTP handler (HTTP and HTTPS separately)
                     set_default_handler(@"http", target_handler);
                     set_default_handler(@"https", target_handler);
                 } else {
-                    printf("%s is not available as an HTTP handler\n", target);
+                    printf("%s is not available as an HTTP handler\n", [target UTF8String]);
 
                     return 1;
                 }
