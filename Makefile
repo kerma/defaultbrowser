@@ -10,7 +10,7 @@ CFLAGS ?= -O2
 all: $(BIN)
 
 $(BIN):
-	$(CC) -o $(BIN) $(CFLAGS) -framework Foundation -framework ApplicationServices src/main.m
+	$(CC) -o $(BIN) $(CFLAGS) -framework Foundation -framework AppKit -framework ApplicationServices src/main.m
 
 install: $(BIN)
 	install -d $(DESTDIR)$(BINDIR)

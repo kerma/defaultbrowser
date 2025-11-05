@@ -4,6 +4,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <AppKit/AppKit.h>
 #import <ApplicationServices/ApplicationServices.h>
 
 NSString* app_name_from_bundle_id(NSString *app_bundle_id) {
@@ -11,28 +12,35 @@ NSString* app_name_from_bundle_id(NSString *app_bundle_id) {
 }
 
 NSMutableDictionary* get_http_handlers() {
-    NSArray *handlers =
-      (__bridge NSArray *) LSCopyAllHandlersForURLScheme(
-        (__bridge CFStringRef) @"http"
-      );
+    NSURL *url = [NSURL URLWithString:@"http://example.com"];
+    NSArray<NSURL *> *appURLs = [[NSWorkspace sharedWorkspace] URLsForApplicationsToOpenURL:url];
 
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
 
-    for (int i = 0; i < [handlers count]; i++) {
-        NSString *handler = [handlers objectAtIndex:i];
-        dict[app_name_from_bundle_id(handler)] = handler;
+    for (NSURL *appURL in appURLs) {
+        NSBundle *bundle = [NSBundle bundleWithURL:appURL];
+        NSString *bundleId = [bundle bundleIdentifier];
+        if (bundleId) {
+            dict[app_name_from_bundle_id(bundleId)] = bundleId;
+        }
     }
 
     return dict;
 }
 
 NSString* get_current_http_handler() {
-    NSString *handler =
-        (__bridge NSString *) LSCopyDefaultHandlerForURLScheme(
-            (__bridge CFStringRef) @"http"
-        );
+    NSURL *url = [NSURL URLWithString:@"http://example.com"];
+    NSURL *appURL = [[NSWorkspace sharedWorkspace] URLForApplicationToOpenURL:url];
 
-    return app_name_from_bundle_id(handler);
+    if (appURL) {
+        NSBundle *bundle = [NSBundle bundleWithURL:appURL];
+        NSString *bundleId = [bundle bundleIdentifier];
+        if (bundleId) {
+            return app_name_from_bundle_id(bundleId);
+        }
+    }
+
+    return nil;
 }
 
 void set_default_handler(NSString *url_scheme, NSString *handler) {
@@ -43,7 +51,7 @@ void set_default_handler(NSString *url_scheme, NSString *handler) {
 }
 
 int main(int argc, const char *argv[]) {
-    const char *target = (argc == 1) ? '\0' : argv[1];
+    const char *target = (argc == 1) ? NULL : argv[1];
 
     @autoreleasepool {
         // Get all HTTP handlers
@@ -52,7 +60,7 @@ int main(int argc, const char *argv[]) {
         // Get current HTTP handler
         NSString *current_handler_name = get_current_http_handler();
 
-        if (target == '\0') {
+        if (target == NULL) {
             // List all HTTP handlers, marking the current one with a star
             for (NSString *key in handlers) {
                 char *mark = [key caseInsensitiveCompare:current_handler_name] == NSOrderedSame ? "* " : "  ";
