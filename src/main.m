@@ -58,6 +58,8 @@ int main(int argc, const char *argv[]) {
                 char *mark = [key caseInsensitiveCompare:current_handler_name] == NSOrderedSame ? "* " : "  ";
                 printf("%s%s\n", mark, [key UTF8String]);
             }
+        } else if (strcmp(target, "-s") == 0) {
+            printf("%s\n", [current_handler_name UTF8String]);
         } else {
             NSString *target_handler_name = [NSString stringWithUTF8String:target];
 
