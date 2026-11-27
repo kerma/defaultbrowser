@@ -3,14 +3,14 @@ PREFIX ?= /usr/local
 BINDIR ?= $(PREFIX)/bin
 
 CC ?= gcc
-CFLAGS ?= -O2
+CFLAGS ?= -O2 -mmacosx-version-min=11.0
 
 .PHONY: all install uninstall clean
 
 all: $(BIN)
 
 $(BIN):
-	$(CC) -o $(BIN) $(CFLAGS) -framework Foundation -framework ApplicationServices src/main.m
+	$(CC) -o $(BIN) $(CFLAGS) -framework Foundation -framework ApplicationServices -framework AppKit src/main.m
 
 install: $(BIN)
 	install -d $(DESTDIR)$(BINDIR)

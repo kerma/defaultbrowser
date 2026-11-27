@@ -4,6 +4,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <AppKit/AppKit.h>
 #import <ApplicationServices/ApplicationServices.h>
 
 NSString* app_name_from_bundle_id(NSString *app_bundle_id) {
@@ -42,6 +43,47 @@ void set_default_handler(NSString *url_scheme, NSString *handler) {
     );
 }
 
+// NSWorkspace (macOS 12+) shows one prompt per call, so https is set only if http did not carry over.
+BOOL set_default_handler_modern(NSString *url_scheme, NSString *handler) {
+    if (@available(macOS 12.0, *)) {
+        NSURL *app_url = [[NSWorkspace sharedWorkspace] URLForApplicationWithBundleIdentifier:handler];
+        if (app_url == nil) return NO;
+
+        dispatch_semaphore_t done = dispatch_semaphore_create(0);
+        [[NSWorkspace sharedWorkspace] setDefaultApplicationAtURL:app_url
+                                             toOpenURLsWithScheme:url_scheme
+                                                completionHandler:^(NSError *error) {
+            if (error != nil) {
+                fprintf(stderr, "Failed to set %s: %s\n", [url_scheme UTF8String],
+                        [[error localizedDescription] UTF8String]);
+            }
+            dispatch_semaphore_signal(done);
+        }];
+        dispatch_semaphore_wait(done, DISPATCH_TIME_FOREVER);
+        return YES;
+    }
+    return NO;
+}
+
+BOOL is_default_handler(NSString *url_scheme, NSString *handler) {
+    NSString *current = (NSString *) CFBridgingRelease(LSCopyDefaultHandlerForURLScheme(
+        (__bridge CFStringRef) url_scheme
+    ));
+    return [current caseInsensitiveCompare:handler] == NSOrderedSame;
+}
+
+void set_http_and_https(NSString *handler) {
+    if (!set_default_handler_modern(@"http", handler)) {
+        set_default_handler(@"http", handler);
+        set_default_handler(@"https", handler);
+        return;
+    }
+
+    if (!is_default_handler(@"https", handler)) {
+        set_default_handler_modern(@"https", handler);
+    }
+}
+
 int main(int argc, const char *argv[]) {
     const char *target = (argc == 1) ? '\0' : argv[1];
 
@@ -68,8 +110,7 @@ int main(int argc, const char *argv[]) {
 
                 if (target_handler != nil) {
                     // Set new HTTP handler (HTTP and HTTPS separately)
-                    set_default_handler(@"http", target_handler);
-                    set_default_handler(@"https", target_handler);
+                    set_http_and_https(target_handler);
                 } else {
                     printf("%s is not available as an HTTP handler\n", target);
 
